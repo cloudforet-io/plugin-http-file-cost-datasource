@@ -5,6 +5,7 @@ from dateutil import rrule
 from spaceone.core import utils
 from spaceone.core.manager import BaseManager
 from cloudforet.cost_analysis.error import *
+from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
 from cloudforet.cost_analysis.connector.spaceone_connector import SpaceONEConnector
 from cloudforet.cost_analysis.model.cost_model import Cost
 
@@ -50,13 +51,11 @@ class CostManager(BaseManager):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.space_connector: SpaceONEConnector = self.locator.get_connector('SpaceONEConnector')
+        self.http_file_connector: HTTPFileConnector = self.locator.get_connector(HTTPFileConnector)
 
-    # TODO: change method from s3 to HTTP
     def get_data(self, options, secret_data, schema, task_options):
-        pass
-        # self.aws_s3_connector.create_session(options, secret_data, schema)
-        # self._check_task_options(task_options)
+        self.http_file_connector.create_session(options, secret_data, schema)
+        self._check_task_options(task_options)
         #
         # start = task_options['start']
         # account_id = task_options['account_id']
@@ -80,13 +79,6 @@ class CostManager(BaseManager):
         #             yield self._make_cost_data(results, account_id)
         #
         # yield []
-
-    def _update_sync_state(self, options, secret_data, schema, service_account_id):
-        self.space_connector.init_client(options, secret_data, schema)
-        service_account_info = self.space_connector.get_service_account(service_account_id)
-        tags = service_account_info.get('tags', {})
-        tags['is_sync'] = 'true'
-        self.space_connector.update_service_account(service_account_id, tags)
 
     def _make_cost_data(self, results, account_id):
         costs_data = []

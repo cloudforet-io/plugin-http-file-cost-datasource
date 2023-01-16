@@ -15,7 +15,7 @@ class DataSourceService(BaseService):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.data_source_mgr: DataSourceManager = self.locator.get_manager('DataSourceManager')
+        self.data_source_mgr: DataSourceManager = self.locator.get_manager(DataSourceManager)
 
     @transaction
     @check_required(['options'])

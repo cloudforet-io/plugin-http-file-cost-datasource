@@ -14,7 +14,7 @@ class JobService(BaseService):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.job_mgr: JobManager = self.locator.get_manager('JobManager')
+        self.job_mgr: JobManager = self.locator.get_manager(JobManager)
 
     @transaction
     @check_required(['options', 'secret_data'])
