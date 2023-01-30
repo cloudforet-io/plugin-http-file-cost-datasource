@@ -42,6 +42,5 @@ class JobService(BaseService):
         schema = params.get('schema')
         start = params.get('start')
         last_synchronized_at = params.get('last_synchronized_at')
-        domain_id = params['domain_id']
 
-        return self.job_mgr.get_tasks(options, secret_data, schema, start, last_synchronized_at, domain_id)
+        return self.job_mgr.get_tasks(options, secret_data, schema, start, last_synchronized_at)

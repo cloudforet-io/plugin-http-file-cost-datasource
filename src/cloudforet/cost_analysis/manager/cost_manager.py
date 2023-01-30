@@ -6,7 +6,6 @@ from spaceone.core import utils
 from spaceone.core.manager import BaseManager
 from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
-from cloudforet.cost_analysis.connector.spaceone_connector import SpaceONEConnector
 from cloudforet.cost_analysis.model.cost_model import Cost
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,29 +55,12 @@ class CostManager(BaseManager):
     def get_data(self, options, secret_data, schema, task_options):
         self.http_file_connector.create_session(options, secret_data, schema)
         self._check_task_options(task_options)
-        #
-        # start = task_options['start']
-        # account_id = task_options['account_id']
-        # service_account_id = task_options['service_account_id']
-        # database = task_options['database']
-        # is_sync = task_options['is_sync']
-        #
-        # if is_sync == 'false':
-        #     self._update_sync_state(options, secret_data, schema, service_account_id)
-        #
-        # date_ranges = self._get_date_range(start)
-        #
-        # for date in date_ranges:
-        #     year, month = date.split('-')
-        #     path = f'SPACE_ONE/billing/database={database}/account_id={account_id}/year={year}/month={month}'
-        #     response = self.aws_s3_connector.list_objects(path)
-        #     contents = response.get('Contents', [])
-        #     for content in contents:
-        #         response_stream = self.aws_s3_connector.get_cost_data(content['Key'])
-        #         for results in response_stream:
-        #             yield self._make_cost_data(results, account_id)
-        #
-        # yield []
+
+        signed_url = task_options['signed_url']
+
+        response_stream = self.http_file_connector.get_cost_data(signed_url)
+        for results in response_stream:
+            yield self._make_cost_data(results)
 
     def _make_cost_data(self, results, account_id):
         costs_data = []
@@ -207,20 +189,7 @@ class CostManager(BaseManager):
 
     @staticmethod
     def _check_task_options(task_options):
-        if 'start' not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key='task_options.start')
-
-        if 'account_id' not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key='task_options.account_id')
-
-        if 'service_account_id' not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key='task_options.service_account_id')
-
-        if 'database' not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key='task_options.database')
-
-        if 'is_sync' not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key='task_options.is_sync')
+        pass
 
     @staticmethod
     def _get_date_range(start):
