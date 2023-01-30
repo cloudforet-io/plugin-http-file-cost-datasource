@@ -1,0 +1,4 @@
+﻿cost,currency,usage_quantity,provider,region_code,product,account,year,month,day
+500,USD,4755208,aws,ap-northeast2,AmazonEC2,123456789,2023,1,5
+100,USD,890010,aws,ap-northeast2,AmazonEC2,123456789,2023,1,10
+800,USD,7212305,aws,ap-northeast2,AmazonEC2,123456789,2023,1,15
