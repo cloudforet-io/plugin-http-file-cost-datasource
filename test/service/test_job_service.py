@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta
+import time
 from unittest.mock import patch
 
 from spaceone.core.unittest.result import print_data
@@ -7,14 +7,13 @@ from spaceone.core.unittest.runner import RichTestRunner
 from spaceone.core import config
 from spaceone.core import utils
 from spaceone.core.transaction import Transaction
-
+from cloudforet.cost_analysis.error import *
+from cloudforet.cost_analysis.service.job_service import JobService
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
-from cloudforet.cost_analysis.service.cost_service import CostService
-from cloudforet.cost_analysis.info.cost_info import CostInfo, CostsInfo
 from test.factory.common_params import *
 
 
-class TestCostService(unittest.TestCase):
+class TestJobService(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -30,17 +29,15 @@ class TestCostService(unittest.TestCase):
         super().tearDownClass()
 
     @patch.object(HTTPFileConnector, '__init__', return_value=None)
-    def test_get_cost_data(self, *args):
+    def test_get_tasks(self, *args):
         params = {
             'options': OPTIONS,
-            'secret_data': SECRET_DATA,
-            'task_options': {}
+            'secret_data': SECRET_DATA
         }
 
-        self.transaction.method = 'get_data'
-        cost_svc = CostService(transaction=self.transaction)
-        response = cost_svc.get_data(params.copy())
-        print_data(response, 'test_get_cost_data')
+        self.transaction.method = 'get_tasks'
+        data_source_svc = JobService(transaction=self.transaction)
+        data_source_svc.get_tasks(params.copy())
 
 
 if __name__ == "__main__":
