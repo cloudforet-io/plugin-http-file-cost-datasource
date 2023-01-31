@@ -22,6 +22,8 @@ class JobManager(BaseManager):
         _LOGGER.debug(f'[get_tasks] billing months: {results}')
         tasks = []
         changed = []
+        for result in results:
+            pass
 
     @staticmethod
     def _get_start_time(start, last_synchronized_at=None):

@@ -10,41 +10,6 @@ from cloudforet.cost_analysis.model.cost_model import Cost
 
 _LOGGER = logging.getLogger(__name__)
 
-_REGION_MAP = {
-    'APE1': 'ap-east-1',
-    'APN1': 'ap-northeast-1',
-    'APN2': 'ap-northeast-2',
-    'APN3': 'ap-northeast-3',
-    'APS1': 'ap-southeast-1',
-    'APS2': 'ap-southeast-2',
-    'APS3': 'ap-south-1',
-    'CAN1': 'ca-central-1',
-    'CPT': 'af-south-1',
-    'EUN1': 'eu-north-1',
-    'EUC1': 'eu-central-1',
-    'EU': 'eu-west-1',
-    'EUW2': 'eu-west-2',
-    'EUW3': 'eu-west-3',
-    'MES1': 'me-south-1',
-    'SAE1': 'sa-east-1',
-    'UGW1': 'AWS GovCloud (US-West)',
-    'UGE1': 'AWS GovCloud (US-East)',
-    'USE1': 'us-east-1',
-    'USE2': 'us-east-2',
-    'USW1': 'us-west-1',
-    'USW2': 'us-west-2',
-    'AP': 'Asia Pacific',
-    'AU': 'Australia',
-    'CA': 'Canada',
-    # 'EU': 'Europe and Israel',
-    'IN': 'India',
-    'JP': 'Japan',
-    'ME': 'Middle East',
-    'SA': 'South America',
-    'US': 'United States',
-    'ZA': 'South Africa',
-}
-
 
 class CostManager(BaseManager):
 
@@ -56,70 +21,31 @@ class CostManager(BaseManager):
         self.http_file_connector.create_session(options, secret_data, schema)
         self._check_task_options(task_options)
 
-        signed_url = task_options['signed_url']
+        base_url = options['base_url']
 
-        response_stream = self.http_file_connector.get_cost_data(signed_url)
+        response_stream = self.http_file_connector.get_cost_data(base_url)
         for results in response_stream:
             yield self._make_cost_data(results)
 
     def _make_cost_data(self, results, account_id):
         costs_data = []
-
-        """ Source Data Model
-        class CostSummaryItem(BaseModel):
-            usage_date: str
-            region: str
-            service_code: str
-            usage_type: str
-            instance_type: str
-            tag_application: str
-            tag_environment: str
-            tag_name: str
-            tag_role: str
-            tag_service: str
-            usage_quantity: float
-            usage_cost: float
-        """
-
         for result in results:
             try:
-                region = result['region'] or 'USE1'
                 data = {
                     'cost': result['usage_cost'],
-                    'currency': 'USD',
+                    'currency': result['currency'],
                     'usage_quantity': result['usage_quantity'],
-                    'provider': 'aws',
-                    'region_code': _REGION_MAP.get(region, region),
+                    'provider': result['provider'],
+                    'region_code': result['region_code'],
                     'product': result['service_code'],
-                    'account': account_id,
+                    'account': result['account'],
                     'usage_type': self._parse_usage_type(result),
                     'billed_at': datetime.strptime(result['usage_date'], '%Y-%m-%d'),
                     'additional_info': {
-                        'raw_usage_type': result['usage_type']
+                        'raw_usage_type': result.get('usage_type', self._parse_usage_type(result))
                     },
-                    'tags': self._get_tags_from_cost_data(result)
+                    'tags': result['usage_type']
                 }
-
-                tag_application = result.get('tag_application')
-                tag_environment = result.get('tag_environment')
-                tag_name = result.get('tag_name')
-                tag_role = result.get('tag_role')
-                tag_service = result.get('tag_service')
-
-                if tag_application:
-                    data['tags']['Application'] = tag_application
-
-                if tag_environment:
-                    data['tags']['Environment'] = tag_environment
-
-                if tag_name:
-                    data['tags']['Name'] = tag_name
-
-                if tag_role:
-                    data['tags']['Role'] = tag_role
-
-                if tag_service:
-                    data['tags']['Service'] = tag_service
 
             except Exception as e:
                 _LOGGER.error(f'[_make_cost_data] make data error: {e}', exc_info=True)
@@ -136,34 +62,8 @@ class CostManager(BaseManager):
         return costs_data
 
     @staticmethod
-    def _get_tags_from_cost_data(cost_data: dict) -> dict:
-        tags = {}
-
-        if tags_str := cost_data.get('tags'):
-            try:
-                tags_dict: dict = utils.load_json(tags_str)
-                for key, value in tags_dict.items():
-                    key = key.replace('user:', '')
-                    tags[key] = value
-            except Exception as e:
-                _LOGGER.debug(e)
-
-        if tag_application := cost_data.get('tag_application'):
-            tags['Application'] = tag_application
-
-        if tag_environment := cost_data.get('tag_environment'):
-            tags['Environment'] = tag_environment
-
-        if tag_name := cost_data.get('tag_name'):
-            tags['Name'] = tag_name
-
-        if tag_role := cost_data.get('tag_role'):
-            tags['Role'] = tag_role
-
-        if tag_service := cost_data.get('tag_service'):
-            tags['Service'] = tag_service
-
-        return tags
+    def _check_task_options(task_options):
+        pass
 
     @staticmethod
     def _parse_usage_type(cost_info):
@@ -186,18 +86,3 @@ class CostManager(BaseManager):
                 return 'requests.http'
         else:
             return cost_info['instance_type']
-
-    @staticmethod
-    def _check_task_options(task_options):
-        pass
-
-    @staticmethod
-    def _get_date_range(start):
-        date_ranges = []
-        start_time = datetime.strptime(start, '%Y-%m-%d')
-        now = datetime.utcnow()
-        for dt in rrule.rrule(rrule.MONTHLY, dtstart=start_time, until=now):
-            billed_month = dt.strftime('%Y-%m')
-            date_ranges.append(billed_month)
-
-        return date_ranges

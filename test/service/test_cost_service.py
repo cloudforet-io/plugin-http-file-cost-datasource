@@ -33,14 +33,16 @@ class TestCostService(unittest.TestCase):
     def test_get_cost_data(self, *args):
         params = {
             'options': OPTIONS,
-            'secret_data': SECRET_DATA,
+            'secret_data': {},
             'task_options': {}
         }
 
         self.transaction.method = 'get_data'
         cost_svc = CostService(transaction=self.transaction)
-        response = cost_svc.get_data(params.copy())
-        print_data(response, 'test_get_cost_data')
+        responses = cost_svc.get_data(params.copy())
+
+        for response in responses:
+            print_data(response, 'test_get_cost_data')
 
 
 if __name__ == "__main__":
