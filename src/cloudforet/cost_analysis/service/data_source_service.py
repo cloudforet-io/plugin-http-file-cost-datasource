@@ -1,8 +1,6 @@
 import logging
 
 from spaceone.core.service import *
-
-from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.manager.data_source_manager import DataSourceManager
 
 _LOGGER = logging.getLogger(__name__)
@@ -15,7 +13,7 @@ class DataSourceService(BaseService):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.data_source_mgr: DataSourceManager = self.locator.get_manager('DataSourceManager')
+        self.data_source_mgr: DataSourceManager = self.locator.get_manager(DataSourceManager)
 
     @transaction
     @check_required(['options'])

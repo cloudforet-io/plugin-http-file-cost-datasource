@@ -1,7 +1,6 @@
 import logging
 
 from spaceone.core.service import *
-from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.manager.cost_manager import CostManager
 
 _LOGGER = logging.getLogger(__name__)
@@ -14,7 +13,7 @@ class CostService(BaseService):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cost_mgr: CostManager = self.locator.get_manager('CostManager')
+        self.cost_mgr: CostManager = self.locator.get_manager(CostManager)
 
     @transaction
     @check_required(['options', 'secret_data', 'task_options'])
