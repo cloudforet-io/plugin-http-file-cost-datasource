@@ -1,16 +1,13 @@
 import unittest
-import time
 from unittest.mock import patch
 
 from spaceone.core.unittest.result import print_data
 from spaceone.core.unittest.runner import RichTestRunner
 from spaceone.core import config
-from spaceone.core import utils
 from spaceone.core.transaction import Transaction
-from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.service.job_service import JobService
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
-from test.factory.common_params import *
+from test.factory.common_config import OPTIONS
 
 
 class TestJobService(unittest.TestCase):
@@ -32,12 +29,14 @@ class TestJobService(unittest.TestCase):
     def test_get_tasks(self, *args):
         params = {
             'options': OPTIONS,
-            'secret_data': SECRET_DATA
+            'secret_data': {}
         }
 
         self.transaction.method = 'get_tasks'
         data_source_svc = JobService(transaction=self.transaction)
-        data_source_svc.get_tasks(params.copy())
+        responses = data_source_svc.get_tasks(params.copy())
+
+        print_data(responses, 'test_get_tasks')
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 from schematics.models import Model
-from schematics.types import ListType, DateTimeType, StringType, DictType
+from schematics.types import ListType, DateTimeType, StringType
 from schematics.types.compound import ModelType
 
 __all__ = ['Tasks']

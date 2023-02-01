@@ -6,7 +6,6 @@ from cloudforet.cost_analysis.model.job_model import Tasks
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
 
 _LOGGER = logging.getLogger(__name__)
-_DEFAULT_DATABASE = 'MZC'
 
 
 class JobManager(BaseManager):
@@ -17,13 +16,28 @@ class JobManager(BaseManager):
 
     def get_tasks(self, options, secret_data, schema, start, last_synchronized_at):
         self.http_file_connector.create_session(options, secret_data, schema)
-        results = self.http_file_connector.get_change_dates(start, last_synchronized_at)
 
-        _LOGGER.debug(f'[get_tasks] billing months: {results}')
         tasks = []
         changed = []
-        for result in results:
-            pass
+
+        start_time = self._get_start_time(start, last_synchronized_at)
+
+        task_options = {
+            'base_url': self.http_file_connector.base_url
+        }
+
+        tasks.append({'task_options': task_options})
+        changed.append({
+            'start': start_time
+        })
+
+        _LOGGER.debug(f'[get_tasks] tasks: {tasks}')
+        _LOGGER.debug(f'[get_tasks] changed: {changed}')
+
+        tasks = Tasks({'tasks': tasks, 'changed': changed})
+
+        tasks.validate()
+        return tasks.to_primitive()
 
     @staticmethod
     def _get_start_time(start, last_synchronized_at=None):

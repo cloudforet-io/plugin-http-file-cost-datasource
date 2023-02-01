@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
-from spaceone.core import utils
 from spaceone.core.manager import BaseManager
+from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
 
 _LOGGER = logging.getLogger(__name__)
@@ -52,11 +52,11 @@ class CostManager(BaseManager):
 
     @staticmethod
     def _check_task_options(task_options):
-        pass
+        if 'base_url' not in task_options:
+            raise ERROR_REQUIRED_PARAMETER(key='task_options.base_url')
 
     @staticmethod
     def _create_billed_at(year, month, day):
         date = f'{year}-{month}-{day}'
         date_format = '%Y-%m-%d'
-        date = datetime.strptime(date, date_format)
-        return utils.datetime_to_iso8601(date)
+        return datetime.strptime(date, date_format)

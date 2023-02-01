@@ -1,17 +1,14 @@
 import unittest
-from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from spaceone.core.unittest.result import print_data
 from spaceone.core.unittest.runner import RichTestRunner
 from spaceone.core import config
-from spaceone.core import utils
 from spaceone.core.transaction import Transaction
 
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
 from cloudforet.cost_analysis.service.cost_service import CostService
-from cloudforet.cost_analysis.info.cost_info import CostInfo, CostsInfo
-from test.factory.common_params import *
+from test.factory.common_config import OPTIONS
 
 
 class TestCostService(unittest.TestCase):
@@ -34,7 +31,9 @@ class TestCostService(unittest.TestCase):
         params = {
             'options': OPTIONS,
             'secret_data': {},
-            'task_options': {}
+            'task_options': {
+                OPTIONS
+            }
         }
 
         self.transaction.method = 'get_data'

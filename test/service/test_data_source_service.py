@@ -1,16 +1,13 @@
 import unittest
-import time
 from unittest.mock import patch
 
 from spaceone.core.unittest.result import print_data
 from spaceone.core.unittest.runner import RichTestRunner
 from spaceone.core import config
-from spaceone.core import utils
 from spaceone.core.transaction import Transaction
-from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.service.data_source_service import DataSourceService
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
-from test.factory.common_params import *
+from test.factory.common_config import OPTIONS
 
 
 class TestDataSourceService(unittest.TestCase):
@@ -31,7 +28,7 @@ class TestDataSourceService(unittest.TestCase):
     def test_init_data_source(self, *args):
         params = {
             'options': OPTIONS,
-            'secret_data': SECRET_DATA
+            'secret_data': {}
         }
 
         self.transaction.method = 'init'
@@ -44,7 +41,7 @@ class TestDataSourceService(unittest.TestCase):
     def test_verify_data_source(self, *args):
         params = {
             'options': OPTIONS,
-            'secret_data': SECRET_DATA
+            'secret_data': {}
         }
 
         self.transaction.method = 'verify'
