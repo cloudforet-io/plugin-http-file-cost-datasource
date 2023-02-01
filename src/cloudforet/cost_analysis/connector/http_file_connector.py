@@ -22,6 +22,20 @@ _DEFAULT_HTTP_HEADERS = {
     'Content-Type': 'application/json',
     'accept': 'application/json'
 }
+
+_DEFAULT_CSV_COLUMNS = [
+    'cost',
+    'currency',
+    'usage_quantity',
+    'provider',
+    'region_code',
+    'product',
+    'account',
+    'year',
+    'month',
+    'day'
+]
+
 _PAGE_SIZE = 1000
 
 
@@ -41,7 +55,6 @@ class HTTPFileConnector(BaseConnector):
 
         # costs_data = self._download_cost_data(base_url)
         costs_data = self._get_csv(base_url)
-        print(costs_data)
 
         _LOGGER.debug(f'[get_cost_data] costs count: {len(costs_data)}')
 
@@ -95,14 +108,22 @@ class HTTPFileConnector(BaseConnector):
             _LOGGER.error(f'[_download_cost_data] download error: {e}', exc_info=True)
             raise e
 
-    @staticmethod
-    def _get_csv(base_url: str) -> list[dict]:
+    def _get_csv(self, base_url: str) -> list[dict]:
         try:
             df = pd.read_csv(base_url)
             df = df.replace({np.nan: None})
+
+            self._check_columns(df)
 
             costs_data = df.to_dict('records')
             return costs_data
         except Exception as e:
             _LOGGER.error(f'[_get_csv] download error: {e}', exc_info=True)
             raise e
+
+    @staticmethod
+    def _check_columns(data_frame):
+        for column in data_frame.columns:
+            if column not in _DEFAULT_CSV_COLUMNS:
+                _LOGGER.error(f'[_check_columns] invalid columns: {column}', exc_info=True)
+                raise ERROR_INVALID_PARAMETER(key=column)

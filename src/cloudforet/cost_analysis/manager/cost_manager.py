@@ -1,12 +1,8 @@
 import logging
-from datetime import datetime, timedelta
-from dateutil import rrule
-
+from datetime import datetime
 from spaceone.core import utils
 from spaceone.core.manager import BaseManager
-from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
-from cloudforet.cost_analysis.model.cost_model import Cost
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,24 +23,24 @@ class CostManager(BaseManager):
         for results in response_stream:
             yield self._make_cost_data(results)
 
-    def _make_cost_data(self, results, account_id):
+    def _make_cost_data(self, results):
         costs_data = []
         for result in results:
             try:
                 data = {
-                    'cost': result['usage_cost'],
+                    'cost': result['cost'],
                     'currency': result['currency'],
                     'usage_quantity': result['usage_quantity'],
                     'provider': result['provider'],
                     'region_code': result['region_code'],
-                    'product': result['service_code'],
+                    'product': result['product'],
                     'account': result['account'],
-                    'usage_type': self._parse_usage_type(result),
-                    'billed_at': datetime.strptime(result['usage_date'], '%Y-%m-%d'),
+                    'usage_type': result.get('usage_type'),
+                    'billed_at': self._create_billed_at(result['year'], result['month'], result['day']),
                     'additional_info': {
-                        'raw_usage_type': result.get('usage_type', self._parse_usage_type(result))
+                        'raw_usage_type': result.get('usage_type')
                     },
-                    'tags': result['usage_type']
+                    'tags': result.get('tags', {})
                 }
 
             except Exception as e:
@@ -52,13 +48,6 @@ class CostManager(BaseManager):
                 raise e
 
             costs_data.append(data)
-
-            # Excluded because schema validation is too slow
-            # cost_data = Cost(data)
-            # cost_data.validate()
-            #
-            # costs_data.append(cost_data.to_primitive())
-
         return costs_data
 
     @staticmethod
@@ -66,23 +55,8 @@ class CostManager(BaseManager):
         pass
 
     @staticmethod
-    def _parse_usage_type(cost_info):
-        service_code = cost_info['service_code']
-        usage_type = cost_info['usage_type']
-
-        if service_code == 'AWSDataTransfer':
-            if usage_type.find('-In-Bytes') > 0:
-                return 'data-transfer.in'
-            elif usage_type.find('-Out-Bytes') > 0:
-                return 'data-transfer.out'
-            else:
-                return 'data-transfer.etc'
-        elif service_code == 'AmazonCloudFront':
-            if usage_type.find('-HTTPS') > 0:
-                return 'requests.https'
-            elif usage_type.find('-Out-Bytes') > 0:
-                return 'data-transfer.out'
-            else:
-                return 'requests.http'
-        else:
-            return cost_info['instance_type']
+    def _create_billed_at(year, month, day):
+        date = f'{year}-{month}-{day}'
+        date_format = '%Y-%m-%d'
+        date = datetime.strptime(date, date_format)
+        return utils.datetime_to_iso8601(date)
