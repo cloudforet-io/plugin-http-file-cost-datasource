@@ -31,7 +31,7 @@ _PAGE_SIZE = 1000
 
 class HTTPFileConnector(BaseConnector):
 
-    def __init__(self, transaction: Transaction, config: dict):
+    def __init__(self, transaction: Transaction, config: dict = None):
         super().__init__(transaction, config)
         self.base_url = None
 
