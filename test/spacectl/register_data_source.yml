@@ -1,0 +1,5 @@
+---
+name: HTTP File Data Source
+data_source_type: EXTERNAL
+plugin_info:
+  plugin_id: plugin-http-file-cost-datasource
