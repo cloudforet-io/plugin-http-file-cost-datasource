@@ -30,16 +30,14 @@ class CostManager(BaseManager):
                 data = {
                     'cost': result['cost'],
                     'currency': result['currency'],
-                    'usage_quantity': result['usage_quantity'],
+                    'usage_quantity': result.get('usage_quantity', 0),
                     'provider': result['provider'],
                     'region_code': result['region_code'],
                     'product': result['product'],
                     'account': result['account'],
                     'usage_type': result.get('usage_type'),
                     'billed_at': self._create_billed_at(result['year'], result['month'], result['day']),
-                    'additional_info': {
-                        'raw_usage_type': result.get('usage_type')
-                    },
+                    'additional_info': {},
                     'tags': result.get('tags', {})
                 }
 
