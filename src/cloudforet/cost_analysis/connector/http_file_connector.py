@@ -5,6 +5,8 @@ import numpy as np
 
 from spaceone.core.transaction import Transaction
 from spaceone.core.connector import BaseConnector
+from typing import List
+
 from cloudforet.cost_analysis.error import *
 
 __all__ = ['HTTPFileConnector']
@@ -56,7 +58,7 @@ class HTTPFileConnector(BaseConnector):
         if 'base_url' not in options:
             raise ERROR_REQUIRED_PARAMETER(key='options.base_url')
 
-    def _get_csv(self, base_url: str) -> list[dict]:
+    def _get_csv(self, base_url: str) -> List[dict]:
         try:
             df = pd.read_csv(base_url)
             df = df.replace({np.nan: None})
