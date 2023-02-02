@@ -34,7 +34,7 @@ class CostManager(BaseManager):
                     'provider': result['provider'],
                     'region_code': result['region_code'],
                     'product': result['product'],
-                    'account': result['account'],
+                    'account': str(result['account']),
                     'usage_type': result.get('usage_type'),
                     'billed_at': self._create_billed_at(result['year'], result['month'], result['day']),
                     'additional_info': {},
