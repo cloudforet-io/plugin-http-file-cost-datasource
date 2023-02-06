@@ -60,7 +60,7 @@ class HTTPFileConnector(BaseConnector):
 
     def _get_csv(self, base_url: str) -> List[dict]:
         try:
-            df = pd.read_csv(base_url, header=0)
+            df = pd.read_csv(base_url, header=0, sep=',')
             df = df.replace({np.nan: None})
 
             self._check_columns(df)
