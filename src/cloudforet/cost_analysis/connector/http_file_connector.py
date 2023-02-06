@@ -60,7 +60,7 @@ class HTTPFileConnector(BaseConnector):
 
     def _get_csv(self, base_url: str) -> List[dict]:
         try:
-            df = pd.read_csv(base_url)
+            df = pd.read_csv(base_url, header=0)
             df = df.replace({np.nan: None})
 
             self._check_columns(df)
@@ -76,4 +76,4 @@ class HTTPFileConnector(BaseConnector):
         for column in data_frame.columns:
             if column not in _DEFAULT_CSV_COLUMNS:
                 _LOGGER.error(f'[_check_columns] invalid columns: {column}', exc_info=True)
-                raise ERROR_INVALID_PARAMETER(key=column)
+                raise ERROR_INVALID_COLUMN(column=column)
