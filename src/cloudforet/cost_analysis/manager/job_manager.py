@@ -20,15 +20,13 @@ class JobManager(BaseManager):
         tasks = []
         changed = []
 
-        start_time = self._get_start_time(start, last_synchronized_at)
-
         task_options = {
             'base_url': self.http_file_connector.base_url
         }
 
         tasks.append({'task_options': task_options})
         changed.append({
-            'start': start_time
+            'start': '1900-01-01T00:00:00Z'
         })
 
         _LOGGER.debug(f'[get_tasks] tasks: {tasks}')
@@ -38,19 +36,3 @@ class JobManager(BaseManager):
 
         tasks.validate()
         return tasks.to_primitive()
-
-    @staticmethod
-    def _get_start_time(start, last_synchronized_at=None):
-
-        if start:
-            start_time: datetime = start
-        elif last_synchronized_at:
-            start_time: datetime = last_synchronized_at - timedelta(days=7)
-            start_time = start_time.replace(day=1)
-        else:
-            start_time: datetime = datetime.utcnow() - timedelta(days=365)
-            start_time = start_time.replace(day=1)
-
-        start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
-
-        return start_time
