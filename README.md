@@ -5,17 +5,18 @@
 ## 1) CSV format
 ![img.png](examples/img.png)
 * The above is an example of a csv file, and the fields that exist in the csv must exist.
-* fields
-  * cost
-  * currency
+* Here is a list of available fields.
+Of these, `cost`, `currency`, `year`, `month`, and `day` fields are required fields.
+  * **cost(required)**
+  * **currency(required)**
   * usage_quantity
   * provider
   * region_code
   * product
   * account
-  * year
-  * month
-  * day
+  * **year(required)**
+  * **month(required)**
+  * **day(required)**
 
 
 ## 2) How to use
@@ -23,7 +24,7 @@ In order to use the plugin, how to use [spacectl CLI tools](https://github.com/c
 
 1. Check if the plugin you want to use from the marketplace exists.
 ```shell
- $ sp list repository.Plugin -p service_type=cost_analysis.DataSource --minimal
+ $ spacectl list repository.Plugin -p service_type=cost_analysis.DataSource --minimal
  
  plugin_id                        | name                                | image                                     | state   | service_type             | registry_type
 ----------------------------------+-------------------------------------+-------------------------------------------+---------+--------------------------+-----------------
@@ -32,7 +33,7 @@ In order to use the plugin, how to use [spacectl CLI tools](https://github.com/c
 
 2. Register with the DataSource resource of cost-analysis.
 ```shell
-$ sp exec register cost-analysis.DataSource -f create_data_source.yml
+$ spacectl exec register cost-analysis.DataSource -f create_data_source.yml
 ```
 ```yaml
 # register_data_source.yml
@@ -46,7 +47,7 @@ template: {}
 
 3. Check the registered CSV Plugin information.
 ```shell
-$ sp exec get cost-analysis.DataSource -p data_source_id=<data_source_id>
+$ spacectl exec get cost-analysis.DataSource -p data_source_id=<data_source_id>
 
 ---
 created_at: '2023-02-06T11:04:34.348Z'
@@ -90,5 +91,5 @@ options:
 
 5. Manually sync the cost information of the csv file in step 4.
 ```shell
-$ sp exec sync cost-analysis.DataSource -p data_source_id=<data_source_id>
+$ spacectl exec sync cost-analysis.DataSource -p data_source_id=<data_source_id>
 ```
