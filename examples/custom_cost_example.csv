@@ -1,0 +1,4 @@
+﻿cost,currency,year,month,day,provider,region_code,product,account,usage_quantity,usage_type
+149.5,USD,2023,1,17,ATLASSIAN,GLOBAL,Confluence,123456,0,Pyengine
+19.5,USD,2023,1,17,ATLASSIAN,GLOBAL,draw.io,123456,0,Pyengine
+209.25,USD,2023,1,17,ATLASSIAN,GLOBAL,Jira Software,123456,0,Pyengine
