@@ -23,7 +23,8 @@ _DEFAULT_CSV_COLUMNS = [
     'account',
     'year',
     'month',
-    'day'
+    'day',
+    'usage_type'
 ]
 
 _PAGE_SIZE = 1000
