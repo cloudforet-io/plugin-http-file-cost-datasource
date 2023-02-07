@@ -13,18 +13,12 @@ __all__ = ['HTTPFileConnector']
 
 _LOGGER = logging.getLogger(__name__)
 
-_DEFAULT_CSV_COLUMNS = [
+_REQUIRED_CSV_COLUMNS = [
     'cost',
     'currency',
-    'usage_quantity',
-    'provider',
-    'region_code',
-    'product',
-    'account',
     'year',
     'month',
-    'day',
-    'usage_type'
+    'day'
 ]
 
 _PAGE_SIZE = 1000
@@ -64,7 +58,7 @@ class HTTPFileConnector(BaseConnector):
             df = pd.read_csv(base_url, header=0, sep=',')
             df = df.replace({np.nan: None})
 
-            self._check_columns(df)
+            self._check_required_columns(df)
 
             costs_data = df.to_dict('records')
             return costs_data
@@ -73,8 +67,8 @@ class HTTPFileConnector(BaseConnector):
             raise e
 
     @staticmethod
-    def _check_columns(data_frame):
-        for column in data_frame.columns:
-            if column not in _DEFAULT_CSV_COLUMNS:
-                _LOGGER.error(f'[_check_columns] invalid columns: {column}', exc_info=True)
+    def _check_required_columns(data_frame):
+        for column in _REQUIRED_CSV_COLUMNS:
+            if column not in data_frame.columns:
+                _LOGGER.error(f'[_check_columns] invalid required columns: {column}', exc_info=True)
                 raise ERROR_INVALID_COLUMN(column=column)
