@@ -30,13 +30,17 @@ class HTTPFileConnector(BaseConnector):
         super().__init__(transaction, config)
         self.base_url = None
         self.field_mapper = None
+        self.default_vars = None
 
     def create_session(self, options: dict, secret_data: dict, schema: str = None) -> None:
         self._check_options(options)
         self.base_url = options['base_url']
 
-        if 'header_columns' in options:
+        if 'field_mapper' in options:
             self.field_mapper = options['field_mapper']
+
+        if 'default_vars' in options:
+            self.default_vars = options['default_vars']
 
     def get_cost_data(self, base_url):
         _LOGGER.debug(f'[get_cost_data] base url: {base_url}')
@@ -65,6 +69,10 @@ class HTTPFileConnector(BaseConnector):
             if self.field_mapper:
                 for origin, actual in self.field_mapper.items():
                     df.rename(columns={actual: origin}, inplace=True)
+
+            if self.default_vars:
+                for key, value in self.default_vars.items():
+                    df[key] = value
 
             self._check_required_columns(df)
 
