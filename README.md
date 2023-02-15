@@ -6,12 +6,14 @@
 
 ## 1) Overview
 
-This plugin is a plugin that collects cost data from a CSV file. The CSV file must be in the format specified in
-the [2) CSV format](#2-csv-format) section.    
-The CSV file must be located on the web server, and the URL of the CSV file must be specified in
-the [3) options of the plugin](#3-options-of-plugin).  
-If you have completed understanding the steps 1) and 2), you can check the actual usage
-in [4) How to use](#4-how-to-use).
+This plugin is a plugin that collects cost data from a CSV file.  
+The CSV file must be in the format specified in the [2) CSV format](#2-csv-format) section.  
+
+The CSV file must be located on the web server,  
+and the URL must be specified in the [3) options of the plugin](#3-options-of-plugin).  
+
+If you have completed understanding the steps 1) and 2),  
+you can check the actual usage in [4) How to use](#4-how-to-use).
 
 ## 2) CSV format
 
