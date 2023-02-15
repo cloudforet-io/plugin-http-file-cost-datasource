@@ -1,10 +1,19 @@
 import logging
 from datetime import datetime
+from dateutil.parser import parse
 from spaceone.core.manager import BaseManager
 from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
 
 _LOGGER = logging.getLogger(__name__)
+
+_REQUIRED_FIELDS = [
+    'cost',
+    'currency',
+    'year',
+    'month',
+    'day'
+]
 
 
 class CostManager(BaseManager):
@@ -26,6 +35,15 @@ class CostManager(BaseManager):
     def _make_cost_data(self, results):
         costs_data = []
         for result in results:
+
+            if self.http_file_connector.field_mapper:
+                result = self._change_result_by_field_mapper(result)
+
+            if self.http_file_connector.default_vars:
+                self._set_default_vars(result)
+
+            self._check_required_fields(result)
+
             try:
                 data = {
                     'cost': result['cost'],
@@ -36,7 +54,7 @@ class CostManager(BaseManager):
                     'product': result.get('product'),
                     'account': str(result.get('account')),
                     'usage_type': result.get('usage_type'),
-                    'billed_at': self._create_billed_at(result['year'], result['month'], result['day']),
+                    'billed_at': self._create_billed_at_format(result['year'], result['month'], result['day']),
                     'additional_info': {},
                     'tags': result.get('tags', {})
                 }
@@ -53,8 +71,36 @@ class CostManager(BaseManager):
         if 'base_url' not in task_options:
             raise ERROR_REQUIRED_PARAMETER(key='task_options.base_url')
 
+    def _change_result_by_field_mapper(self, result):
+        for origin_field, actual_field in self.http_file_connector.field_mapper.items():
+
+            if actual_field in result:
+                result[origin_field] = result[actual_field]
+                del result[actual_field]
+
+            if 'billed_at' in origin_field:
+                result['billed_at'] = parse(result[origin_field])
+                result['year'] = result[origin_field].year
+                result['month'] = result[origin_field].month
+                result['day'] = result[origin_field].day
+
+            return result
+
+    def _set_default_vars(self, result):
+        for key, value in self.http_file_connector.default_vars.items():
+            result[key] = value
+
     @staticmethod
-    def _create_billed_at(year, month, day):
+    def _check_required_fields(result):
+        for field in _REQUIRED_FIELDS:
+            if field not in result:
+                raise ERROR_REQUIRED_PARAMETER(key=field)
+
+    @staticmethod
+    def _create_billed_at_format(year, month, day):
         date = f'{year}-{month}-{day}'
-        date_format = '%Y-%m-%d'
-        return datetime.strptime(date, date_format)
+        billed_at_format = '%Y-%m-%d'
+        return datetime.strptime(date, billed_at_format)
+
+    # TODO: add collection_info to cost data
+    # TODO: add _LOGGER.debug
