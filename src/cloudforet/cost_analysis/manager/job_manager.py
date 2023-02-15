@@ -20,14 +20,15 @@ class JobManager(BaseManager):
         tasks = []
         changed = []
 
-        task_options = {
-            'base_url': self.http_file_connector.base_url
-        }
+        for base_url in self.http_file_connector.base_url:
+            task_options = {
+                'base_url': base_url
+            }
 
-        tasks.append({'task_options': task_options})
-        changed.append({
-            'start': '1900-01-01T00:00:00Z'
-        })
+            tasks.append({'task_options': task_options})
+            changed.append({
+                'start': '1900-01-01T00:00:00Z'
+            })
 
         _LOGGER.debug(f'[get_tasks] tasks: {tasks}')
         _LOGGER.debug(f'[get_tasks] changed: {changed}')
