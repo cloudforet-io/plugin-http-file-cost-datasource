@@ -17,7 +17,7 @@ class CostManager(BaseManager):
         self.http_file_connector.create_session(options, secret_data, schema)
         self._check_task_options(task_options)
 
-        base_url = options['base_url']
+        base_url = task_options['base_url']
 
         response_stream = self.http_file_connector.get_cost_data(base_url)
         for results in response_stream:
