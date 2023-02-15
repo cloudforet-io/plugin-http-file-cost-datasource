@@ -1,5 +1,4 @@
 import logging
-import copy
 import pandas as pd
 import numpy as np
 
@@ -31,6 +30,7 @@ class HTTPFileConnector(BaseConnector):
         self.base_url = None
         self.field_mapper = None
         self.default_vars = None
+        self.billed_at = None
 
     def create_session(self, options: dict, secret_data: dict, schema: str = None) -> None:
         self._check_options(options)
@@ -41,6 +41,9 @@ class HTTPFileConnector(BaseConnector):
 
         if 'default_vars' in options:
             self.default_vars = options['default_vars']
+
+        if 'billed_at' in options:
+            self.billed_at = options['billed_at']
 
     def get_cost_data(self, base_url):
         _LOGGER.debug(f'[get_cost_data] base url: {base_url}')
@@ -74,10 +77,18 @@ class HTTPFileConnector(BaseConnector):
                 for key, value in self.default_vars.items():
                     df[key] = value
 
+            if self.billed_at:
+                self._check_billed_at(df)
+                self._transform_billed_at_to_datetime(df)
+                df['year'] = df[self.billed_at].dt.year
+                df['month'] = df[self.billed_at].dt.month
+                df['day'] = df[self.billed_at].dt.day
+
             self._check_required_columns(df)
 
             costs_data = df.to_dict('records')
             return costs_data
+
         except Exception as e:
             _LOGGER.error(f'[_get_csv] download error: {e}', exc_info=True)
             raise e
@@ -88,3 +99,18 @@ class HTTPFileConnector(BaseConnector):
             if column not in data_frame.columns:
                 _LOGGER.error(f'[_check_columns] invalid required columns: {column}', exc_info=True)
                 raise ERROR_INVALID_COLUMN(column=column)
+
+    def _check_billed_at(self, data_frame):
+        if self.billed_at not in data_frame.columns:
+            _LOGGER.error(f'[_check_billed_at] invalid required columns: {self.billed_at}', exc_info=True)
+            raise ERROR_INVALID_COLUMN(column=self.billed_at)
+
+    def _transform_billed_at_to_datetime(self, data_frame):
+        try:
+            if isinstance(data_frame[self.billed_at].iloc[0], str):
+                data_frame[self.billed_at] = pd.to_datetime(data_frame[self.billed_at])
+            elif isinstance(data_frame[self.billed_at].iloc[0], int):
+                data_frame[self.billed_at] = pd.to_datetime(data_frame[self.billed_at], unit='s')
+        except Exception as e:
+            _LOGGER.error(f'[_transform_billed_at_to_datetime] transform error: {e}', exc_info=True)
+            raise ERROR_INVALID_BILLED_AT(billed_at=self.billed_at)
