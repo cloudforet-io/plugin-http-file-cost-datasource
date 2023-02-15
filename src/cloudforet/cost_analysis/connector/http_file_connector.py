@@ -77,12 +77,13 @@ class HTTPFileConnector(BaseConnector):
                 for key, value in self.default_vars.items():
                     df[key] = value
 
-            if self.billed_at:
+            if self.billed_at in df.columns:
                 self._check_billed_at(df)
                 self._transform_billed_at_to_datetime(df)
                 df['year'] = df[self.billed_at].dt.year
                 df['month'] = df[self.billed_at].dt.month
                 df['day'] = df[self.billed_at].dt.day
+                _LOGGER.debug(f'[_get_csv] Created year/month/day based on {self.billed_at} column.')
 
             self._check_required_columns(df)
 
