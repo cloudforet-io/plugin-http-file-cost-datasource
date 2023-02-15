@@ -12,7 +12,7 @@ The CSV file must be in the format specified in the [2) CSV format](#2-csv-forma
 The CSV file must be located on the web server,  
 and the URL must be specified in the [3) options of the plugin](#3-options-of-plugin).  
 
-If you have completed understanding the steps 1) and 2),  
+If you have completed understanding the steps 2) and 3),  
 you can check the actual usage in [4) How to use](#4-how-to-use).
 
 ## 2) CSV format
@@ -38,7 +38,7 @@ you can check the actual usage in [4) How to use](#4-how-to-use).
 
 * The following options are available for the plugin.
 * The options are specified in the form of a YAML file.
-* You can find out how yaml is used in [3) How to use](#3-how-to-use) section.
+* You can find out how yaml is used in [4) How to use](#4-how-to-use) section.
 * An example using all options is shown below.
   ```yaml
   # update_data_source_options.yml
