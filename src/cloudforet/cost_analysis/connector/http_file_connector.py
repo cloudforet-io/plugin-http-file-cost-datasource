@@ -29,14 +29,14 @@ class HTTPFileConnector(BaseConnector):
     def __init__(self, transaction: Transaction, config: dict = None):
         super().__init__(transaction, config)
         self.base_url = None
-        self.header_columns = None
+        self.field_mapper = None
 
     def create_session(self, options: dict, secret_data: dict, schema: str = None) -> None:
         self._check_options(options)
         self.base_url = options['base_url']
 
         if 'header_columns' in options:
-            self.header_columns = options['header_columns']
+            self.field_mapper = options['field_mapper']
 
     def get_cost_data(self, base_url):
         _LOGGER.debug(f'[get_cost_data] base url: {base_url}')
@@ -62,9 +62,9 @@ class HTTPFileConnector(BaseConnector):
             df = pd.read_csv(base_url, header=0, sep=',')
             df = df.replace({np.nan: None})
 
-            if self.header_columns:
-                for key, value in self.header_columns.items():
-                    df.rename(columns={key: value}, inplace=True)
+            if self.field_mapper:
+                for origin, actual in self.field_mapper.items():
+                    df.rename(columns={actual: origin}, inplace=True)
 
             self._check_required_columns(df)
 
