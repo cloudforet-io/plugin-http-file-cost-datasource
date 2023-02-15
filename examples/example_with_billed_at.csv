@@ -1,0 +1,4 @@
+﻿cost,currency,provider,product,account,usage_quantity,usage_type,UsageStartDate
+149.5,USD,atlassian,Confluence,pyengine,26,User,2023.1.1 0:00
+19.5,USD,atlassian,draw.io,pyengine,26,User,2023.1.2 0:00
+209.25,USD,atlassian,Jira Software,pyengine,27,User,2023.1.3 0:00
