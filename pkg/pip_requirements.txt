@@ -4,3 +4,4 @@ schematics
 requests
 pandas
 numpy
+chardet

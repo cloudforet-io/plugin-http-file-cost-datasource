@@ -1,6 +1,8 @@
 import logging
 import pandas as pd
 import numpy as np
+import chardet
+import requests
 
 from spaceone.core.transaction import Transaction
 from spaceone.core.connector import BaseConnector
@@ -52,10 +54,10 @@ class HTTPFileConnector(BaseConnector):
         if 'base_url' not in options:
             raise ERROR_REQUIRED_PARAMETER(key='options.base_url')
 
-    @staticmethod
-    def _get_csv(base_url: str) -> List[dict]:
+    def _get_csv(self, base_url: str) -> List[dict]:
         try:
-            df = pd.read_csv(base_url, header=0, sep=',')
+            csv_format = self._search_csv_format(base_url)
+            df = pd.read_csv(base_url, header=0, sep=',', engine='python', encoding=csv_format, dtype=str)
             df = df.replace({np.nan: None})
 
             costs_data = df.to_dict('records')
@@ -63,4 +65,16 @@ class HTTPFileConnector(BaseConnector):
 
         except Exception as e:
             _LOGGER.error(f'[_get_csv] download error: {e}', exc_info=True)
+            raise e
+
+    @staticmethod
+    def _search_csv_format(base_url: str) -> str:
+        try:
+            response = requests.get(base_url)
+            response.encoding = chardet.detect(response.content)['encoding']
+            _LOGGER.debug(f'[_search_csv_format] encoding: {response.encoding}')
+            return response.encoding
+
+        except Exception as e:
+            _LOGGER.error(f'[_search_csv_format] download error: {e}', exc_info=True)
             raise e
