@@ -35,6 +35,7 @@ class CostManager(BaseManager):
     def _make_cost_data(self, results):
         costs_data = []
         for result in results:
+            result = self._apply_strip_to_dict_keys(result)
 
             if self.http_file_connector.field_mapper:
                 result = self._change_result_by_field_mapper(result)
@@ -73,12 +74,21 @@ class CostManager(BaseManager):
         if 'base_url' not in task_options:
             raise ERROR_REQUIRED_PARAMETER(key='task_options.base_url')
 
+    @staticmethod
+    def _apply_strip_to_dict_keys(result):
+        for key in list(result.keys()):
+            new_key = key.strip()
+            if new_key != key:
+                result[new_key] = result[key]
+                del result[key]
+        return result
+
     def _change_result_by_field_mapper(self, result):
         for origin_field, actual_field in self.http_file_connector.field_mapper.items():
-
-            if actual_field in result and origin_field != 'additional_info':
-                result[origin_field] = result[actual_field]
-                del result[actual_field]
+            if isinstance(actual_field, str):
+                if actual_field in result:
+                    result[origin_field] = result[actual_field]
+                    del result[actual_field]
 
             if origin_field == 'additional_info':
                 additional_info = {}
@@ -88,12 +98,32 @@ class CostManager(BaseManager):
                 result[origin_field] = additional_info
 
             if 'billed_at' in origin_field:
-                result['billed_at'] = parse(result[origin_field])
-                result['year'] = result[origin_field].year
-                result['month'] = result[origin_field].month
-                result['day'] = result[origin_field].day
+                if self._check_billed_at(result):
+                    result['billed_at'] = self._apply_parse_date(result[origin_field])
+                    result['year'] = result[origin_field].year
+                    result['month'] = result[origin_field].month
+                    result['day'] = result[origin_field].day
 
-            return result
+        return result
+
+    @staticmethod
+    def _check_billed_at(result):
+        if result['billed_at']:
+            return True
+        elif result.get('year') and result.get('month') and result.get('day'):
+            return False
+        else:
+            _LOGGER.error(f'[_is_not_empty_billed_at] billed_at is empty: {result}')
+            raise ERROR_EMPTY_BILLED_AT(result=result)
+
+    @staticmethod
+    def _apply_parse_date(date):
+        try:
+            parsed_date = parse(date)
+            return parsed_date
+        except TypeError as e:
+            _LOGGER.error(f'[_apply_parse_date] parse date error: {e}', exc_info=True)
+            raise e
 
     def _set_default_vars(self, result):
         for key, value in self.http_file_connector.default_vars.items():
