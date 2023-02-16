@@ -54,8 +54,10 @@ class CostManager(BaseManager):
                     'product': result.get('product'),
                     'account': str(result.get('account')),
                     'usage_type': result.get('usage_type'),
+                    'resource': result.get('resource', ''),
+                    'resource_group': result.get('resource_group', ''),
                     'billed_at': self._create_billed_at_format(result['year'], result['month'], result['day']),
-                    'additional_info': {},
+                    'additional_info': result.get('additional_info', {}),
                     'tags': result.get('tags', {})
                 }
 
@@ -74,9 +76,16 @@ class CostManager(BaseManager):
     def _change_result_by_field_mapper(self, result):
         for origin_field, actual_field in self.http_file_connector.field_mapper.items():
 
-            if actual_field in result:
+            if actual_field in result and origin_field != 'additional_info':
                 result[origin_field] = result[actual_field]
                 del result[actual_field]
+
+            if origin_field == 'additional_info':
+                additional_info = {}
+                for origin_additional_field, actual_additional_field in actual_field.items():
+                    additional_info[origin_additional_field] = result[actual_additional_field]
+                    del result[actual_additional_field]
+                result[origin_field] = additional_info
 
             if 'billed_at' in origin_field:
                 result['billed_at'] = parse(result[origin_field])
@@ -101,6 +110,3 @@ class CostManager(BaseManager):
         date = f'{year}-{month}-{day}'
         billed_at_format = '%Y-%m-%d'
         return datetime.strptime(date, billed_at_format)
-
-    # TODO: add collection_info to cost data
-    # TODO: add _LOGGER.debug
