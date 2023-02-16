@@ -75,10 +75,10 @@ class CostManager(BaseManager):
 
     def _change_result_by_field_mapper(self, result):
         for origin_field, actual_field in self.http_file_connector.field_mapper.items():
-
-            if actual_field in result and origin_field != 'additional_info':
-                result[origin_field] = result[actual_field]
-                del result[actual_field]
+            if isinstance(actual_field, str):
+                if actual_field in result:
+                    result[origin_field] = result[actual_field]
+                    del result[actual_field]
 
             if origin_field == 'additional_info':
                 additional_info = {}
@@ -93,7 +93,7 @@ class CostManager(BaseManager):
                 result['month'] = result[origin_field].month
                 result['day'] = result[origin_field].day
 
-            return result
+        return result
 
     def _set_default_vars(self, result):
         for key, value in self.http_file_connector.default_vars.items():
