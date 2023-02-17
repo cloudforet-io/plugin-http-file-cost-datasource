@@ -5,23 +5,6 @@ from schematics.types.compound import ModelType
 __all__ = ['PluginMetadata']
 
 
-_DEFAULT_DATA_SOURCE_RULES = [
-    {
-        'name': 'match_service_account',
-        'conditions_policy': 'ALWAYS',
-        'actions': {
-            'match_service_account': {
-                'source': 'account',
-                'target': 'data.account'
-            }
-        },
-        'options': {
-            'stop_processing': True
-        }
-    }
-]
-
-
 class MatchServiceAccount(Model):
     source = StringType(required=True)
     target = StringType(required=True)
@@ -51,4 +34,4 @@ class DataSourceRule(Model):
 
 
 class PluginMetadata(Model):
-    data_source_rules = ListType(ModelType(DataSourceRule), default=_DEFAULT_DATA_SOURCE_RULES)
+    data_source_rules = ListType(ModelType(DataSourceRule), default=[])
