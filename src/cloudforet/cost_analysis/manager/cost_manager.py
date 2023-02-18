@@ -43,6 +43,9 @@ class CostManager(BaseManager):
             if self.http_file_connector.default_vars:
                 self._set_default_vars(result)
 
+            if not self._convert_cost_and_usage_quantity_types(result):
+                continue
+
             self._check_required_fields(result)
 
             try:
@@ -128,6 +131,15 @@ class CostManager(BaseManager):
     def _set_default_vars(self, result):
         for key, value in self.http_file_connector.default_vars.items():
             result[key] = value
+
+    @staticmethod
+    def _convert_cost_and_usage_quantity_types(result):
+        try:
+            result['cost'] = float(result['cost'])
+            result['usage_quantity'] = float(result.get('usage_quantity', 0))
+        except Exception as e:
+            return False
+        return True
 
     @staticmethod
     def _check_required_fields(result):
