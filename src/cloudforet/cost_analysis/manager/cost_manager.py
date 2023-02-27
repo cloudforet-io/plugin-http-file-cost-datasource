@@ -46,6 +46,9 @@ class CostManager(BaseManager):
             if not self._convert_cost_and_usage_quantity_types(result):
                 continue
 
+            if not self._exist_cost_and_usage_quantity(result):
+                continue
+
             self._check_required_fields(result)
 
             try:
@@ -140,6 +143,13 @@ class CostManager(BaseManager):
         except Exception as e:
             return False
         return True
+
+    @staticmethod
+    def _exist_cost_and_usage_quantity(result):
+        if result['cost'] or result['usage_quantity']:
+            return True
+        else:
+            return False
 
     @staticmethod
     def _check_required_fields(result):
