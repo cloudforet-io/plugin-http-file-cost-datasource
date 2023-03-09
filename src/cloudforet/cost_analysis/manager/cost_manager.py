@@ -141,14 +141,17 @@ class CostManager(BaseManager):
             result['cost'] = float(result['cost'])
             result['usage_quantity'] = float(result.get('usage_quantity', 0))
         except Exception as e:
+            _LOGGER.debug(f'[_convert_cost_and_usage_quantity_types] convert cost and usage quantity types error: {e}',
+                          exc_info=True)
             return False
         return True
 
     @staticmethod
     def _exist_cost_and_usage_quantity(result):
-        if result['cost'] or result['usage_quantity']:
+        if result['cost'] and result.get('usage_quantity'):
             return True
         else:
+            _LOGGER.debug(f'[_exist_cost_and_usage_quantity] cost or usage quantity are empty: {result}')
             return False
 
     @staticmethod
