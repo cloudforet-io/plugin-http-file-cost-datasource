@@ -36,6 +36,7 @@ class CostManager(BaseManager):
         costs_data = []
         for result in results:
             result = self._apply_strip_to_dict_keys(result)
+            result = self._apply_strip_to_dict_values(result)
 
             if self.http_file_connector.field_mapper:
                 result = self._change_result_by_field_mapper(result)
@@ -87,6 +88,13 @@ class CostManager(BaseManager):
             if new_key != key:
                 result[new_key] = result[key]
                 del result[key]
+        return result
+
+    @staticmethod
+    def _apply_strip_to_dict_values(result):
+        for key, value in result.items():
+            if isinstance(value, str):
+                result[key] = value.strip()
         return result
 
     def _change_result_by_field_mapper(self, result):
@@ -149,7 +157,9 @@ class CostManager(BaseManager):
 
     @staticmethod
     def _exist_cost_and_usage_quantity(result):
-        if result['cost'] and result.get('usage_quantity'):
+        if result['cost'] or result['cost'] == float(0):
+            return True
+        elif result['usage_quantity'] or result['usage_quantity'] == float(0):
             return True
         else:
             _LOGGER.error(f'[_exist_cost_and_usage_quantity] cost or usage quantity are empty: {result}')
