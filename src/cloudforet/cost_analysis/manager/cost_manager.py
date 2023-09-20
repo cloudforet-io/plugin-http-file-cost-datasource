@@ -12,7 +12,6 @@ _REQUIRED_FIELDS = [
     'currency',
     'year',
     'month',
-    'day'
 ]
 
 
@@ -52,19 +51,19 @@ class CostManager(BaseManager):
 
             self._check_required_fields(result)
 
+            result['additional_info']['Account'] = result.get('account')
+
             try:
                 data = {
                     'cost': result['cost'],
-                    'currency': result['currency'],
                     'usage_quantity': result.get('usage_quantity', 0),
+                    'usage_type': result.get('usage_type'),
+                    'usage_unit': result.get('usage_unit'),
                     'provider': result.get('provider'),
                     'region_code': result.get('region_code'),
                     'product': result.get('product'),
-                    'account': str(result.get('account')),
-                    'usage_type': result.get('usage_type'),
                     'resource': result.get('resource', ''),
-                    'resource_group': result.get('resource_group', ''),
-                    'billed_at': self._create_billed_at_format(result['year'], result['month'], result['day']),
+                    'billed_date': f'{result["year"]}-{result["month"]}',
                     'additional_info': result.get('additional_info', {}),
                     'tags': result.get('tags', {})
                 }
@@ -111,24 +110,23 @@ class CostManager(BaseManager):
                     del result[actual_additional_field]
                 result[origin_field] = additional_info
 
-            if 'billed_at' in origin_field:
-                if self._check_billed_at(result):
-                    result['billed_at'] = self._apply_parse_date(result[origin_field])
+            if 'billed_date' in origin_field:
+                if self._check_billed_date(result):
+                    result['billed_date'] = self._apply_parse_date(result[origin_field])
                     result['year'] = result[origin_field].year
                     result['month'] = result[origin_field].month
-                    result['day'] = result[origin_field].day
 
         return result
 
     @staticmethod
-    def _check_billed_at(result):
-        if result['billed_at']:
+    def _check_billed_date(result):
+        if result['billed_date']:
             return True
-        elif result.get('year') and result.get('month') and result.get('day'):
+        elif result.get('year') and result.get('month'):
             return False
         else:
             _LOGGER.error(f'[_is_not_empty_billed_at] billed_at is empty: {result}')
-            raise ERROR_EMPTY_BILLED_AT(result=result)
+            raise ERROR_EMPTY_BILLED_DATE(result=result)
 
     @staticmethod
     def _apply_parse_date(date):
@@ -172,7 +170,7 @@ class CostManager(BaseManager):
                 raise ERROR_REQUIRED_PARAMETER(key=field)
 
     @staticmethod
-    def _create_billed_at_format(year, month, day):
-        date = f'{year}-{month}-{day}'
-        billed_at_format = '%Y-%m-%d'
+    def _create_billed_date_format(year, month):
+        date = f'{year}-{month}'
+        billed_at_format = '%Y-%m'
         return datetime.strptime(date, billed_at_format)

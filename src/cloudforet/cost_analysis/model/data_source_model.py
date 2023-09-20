@@ -35,3 +35,4 @@ class DataSourceRule(Model):
 
 class PluginMetadata(Model):
     data_source_rules = ListType(ModelType(DataSourceRule), default=[])
+    currency = StringType(required=True, default='USD')
