@@ -43,6 +43,8 @@ class CostManager(BaseManager):
             if self.http_file_connector.default_vars:
                 self._set_default_vars(result)
 
+            self._create_billed_date(result)
+
             if not self._convert_cost_and_usage_quantity_types(result):
                 continue
 
@@ -61,7 +63,7 @@ class CostManager(BaseManager):
                     'region_code': result.get('region_code'),
                     'product': result.get('product'),
                     'resource': result.get('resource', ''),
-                    'billed_date': f'{result["year"]}-{result["month"]}',
+                    'billed_date': result['billed_date'],
                     'additional_info': result.get('additional_info', {}),
                     'tags': result.get('tags', {})
                 }
@@ -108,17 +110,35 @@ class CostManager(BaseManager):
                     del result[actual_additional_field]
                 result[origin_field] = additional_info
 
-            if 'billed_date' in origin_field:
-                if self._check_billed_date(result):
-                    result['billed_date'] = self._apply_parse_date(result[origin_field])
-                    result['year'] = result[origin_field].year
-                    result['month'] = result[origin_field].month
+            return result
+
+    def _create_billed_date(self, result):
+        if self._exist_billed_date(result):
+            billed_date = result['billed_date']
+            billed_date = self._apply_parse_date(billed_date)
+            billed_date = str(billed_date.strftime("%Y-%m-%d"))
+
+            result['billed_date'] = billed_date
+
+        else:
+            year = result['year']
+            month = result['month']
+            day = result.get('day', '01')
+
+            if len(month) == 1:
+                month = f'0{month}'
+            if len(day) == 1:
+                day = f'0{day}'
+
+            billed_date = f'{year}-{month}-{day}'
+
+            result['billed_date'] = billed_date
 
         return result
 
     @staticmethod
-    def _check_billed_date(result):
-        if result['billed_date']:
+    def _exist_billed_date(result):
+        if result.get('billed_date'):
             return True
         elif result.get('year') and result.get('month'):
             return False
@@ -166,9 +186,3 @@ class CostManager(BaseManager):
         for field in _REQUIRED_FIELDS:
             if field not in result:
                 raise ERROR_REQUIRED_PARAMETER(key=field)
-
-    @staticmethod
-    def _create_billed_date_format(year, month):
-        date = f'{year}-{month}'
-        billed_at_format = '%Y-%m'
-        return datetime.strptime(date, billed_at_format)
