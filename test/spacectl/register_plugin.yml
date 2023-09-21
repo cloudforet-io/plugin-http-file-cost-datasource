@@ -2,5 +2,8 @@ name: HTTP file Cost Analysis Data Source
 service_type: cost_analysis.DataSource
 image: pyengine/plugin-http-file-cost-datasource
 capability: {}
-tags: {}
+tags:
+  description: HTTP File Data Source
+  icon: https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/csv_icon.png
+  long_description: This plugin can collect predefined CSV format data through http(s) and use it as cost data. Easily integrate data into Cost Analysis from CSV file regardless of any data as possible like API usage.
 template: {}
