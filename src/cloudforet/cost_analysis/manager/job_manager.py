@@ -27,7 +27,7 @@ class JobManager(BaseManager):
 
             tasks.append({'task_options': task_options})
             changed.append({
-                'start': '1900-01-01'
+                'start': '1900-01'
             })
 
         _LOGGER.debug(f'[get_tasks] tasks: {tasks}')
