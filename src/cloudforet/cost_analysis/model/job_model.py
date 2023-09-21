@@ -1,5 +1,5 @@
 from schematics.models import Model
-from schematics.types import ListType, DateTimeType, StringType
+from schematics.types import ListType, StringType
 from schematics.types.compound import ModelType
 
 __all__ = ['Tasks']
@@ -14,8 +14,8 @@ class Task(Model):
 
 
 class Changed(Model):
-    start = StringType(required=True, max_length=7)
-    end = StringType(default=None, max_length=7)
+    start = StringType(required=True)
+    end = StringType(default=None)
 
 
 class Tasks(Model):
