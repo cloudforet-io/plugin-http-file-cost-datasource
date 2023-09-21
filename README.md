@@ -5,7 +5,7 @@
 ---
 
 ## 1) Overview
-
+ㅡ
 This plugin is a plugin that collects cost data from a CSV file.  
 The CSV file must be in the format specified in the [2) CSV format](#2-csv-format) section.  
 
@@ -19,20 +19,26 @@ you can check the actual usage in [4) How to use](#4-how-to-use).
 
 ![img.png](examples/img.png)
 
-* The above is an example of a csv file, and the fields that exist in the csv must exist.
-* Here is a list of available fields.
-  Of these, `cost`, `currency`, `year`, `month`, and `day` fields are required fields.
-    * **cost (required)**
-    * **currency (required)**
-    * **year (required)**
-    * **month (required)**
-    * **day (required)**
-    * usage_quantity
-    * usage_type
-    * provider
-    * region_code
-    * product
-    * account
+* The above is an example of a csv file, and the fields that exist in the csv must exist.  
+* Here is a list of available fields. Of these, `cost` fields are required field.  
+* The required date fields are:  
+  * If there is a `billed_date` (ex. "2023-09-01") field, it works even if there are no `year` and `month` fields.
+  * This works if there is no `billed_date` field and there are `year`, `month`, and `day` fields.
+  * If there is no `billed_date` field and there are `year` and `month`, `day` is applied as 1 day.
+  * Does not work except for the above cases.
+
+<br>
+
+* **cost (required)**
+* **billed_date (required)**
+* **year (required)**
+* **month (required)**
+* **day (optional)**
+* usage_quantity
+* usage_type
+* provider
+* region_code
+* product
 
 ## 3) Options of plugin
 
@@ -113,20 +119,7 @@ options:
     currency: KRW
 ```
 
-**billed_at (optional)**
-
-* If you want to set the billing date, you can use this option.
-* If you do not specify this option, The `year` / `month` / `day` columns must exist.
-* As you can see in [example_with_billed_at.csv](examples/example_with_billed_at.csv), Can be used if billed_at column
-  exists. In our example, this is the `UsageStartDate` column.
-
-```yaml
----
-options:
-  billed_at: UsageStartDate
-```
-
-## 4) How to use
+## 4) How to use (Deprecated)
 
 In order to use the plugin, how to use [spacectl CLI tools](https://github.com/cloudforet-io/spacectl) must be preceded.
 

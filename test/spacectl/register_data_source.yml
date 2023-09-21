@@ -1,5 +1,13 @@
 ---
-name: HTTP File Data Source
+name: CSV File
 data_source_type: EXTERNAL
 plugin_info:
+  secret_data:
+    status: NOT IMPLEMENTED
   plugin_id: plugin-http-file-cost-datasource
+  options:
+    base_url:
+      - https://raw.githubusercontent.com/cloudforet-io/plugin-http-file-cost-datasource/master/examples/cost_example.csv
+    field_mapper:
+      additional_info:
+        Account: account
