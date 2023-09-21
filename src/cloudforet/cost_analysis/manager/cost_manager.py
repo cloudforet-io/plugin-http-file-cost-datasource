@@ -51,8 +51,6 @@ class CostManager(BaseManager):
 
             self._check_required_fields(result)
 
-            result['additional_info']['Account'] = result.get('account')
-
             try:
                 data = {
                     'cost': result['cost'],
