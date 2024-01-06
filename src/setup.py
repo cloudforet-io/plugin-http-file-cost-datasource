@@ -16,27 +16,20 @@
 
 from setuptools import setup, find_packages
 
-with open('VERSION', 'r') as f:
+with open("VERSION", "r") as f:
     VERSION = f.read().strip()
     f.close()
 
 setup(
-    name='plugin-http-file-cost-datasource',
+    name="plugin-http-file-cost-datasource",
     version=VERSION,
-    description='Data source plugin for file by requesting HTTP',
-    long_description='',
-    url='https://https://cloudforet.io',
-    author='Cloudforet Admin',
-    author_email='admin@cloudforet.io',
-    license='Apache License 2.0',
+    description="Data source plugin for file by requesting HTTP",
+    long_description="",
+    url="https://https://cloudforet.io",
+    author="Cloudforet Admin",
+    author_email="admin@cloudforet.io",
+    license="Apache License 2.0",
     packages=find_packages(),
-    install_requires=[
-        'spaceone-core',
-        'spaceone-api',
-        'schematics',
-        'requests',
-        'pandas',
-        'numpy'
-    ],
+    install_requires=["spaceone-api", "schematics", "requests", "pandas", "numpy"],
     zip_safe=False,
 )
