@@ -11,14 +11,10 @@ from test.factory.common_config import OPTIONS
 
 
 class TestDataSourceService(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
-        config.init_conf(package='cloudforet.cost_analysis')
-        cls.transaction = Transaction({
-            'service': 'cost_analysis',
-            'api_class': 'Cost'
-        })
+        config.init_conf(package="cloudforet.cost_analysis")
+        cls.transaction = Transaction({"service": "cost_analysis", "api_class": "Cost"})
         super().setUpClass()
 
     @classmethod
@@ -26,25 +22,19 @@ class TestDataSourceService(unittest.TestCase):
         super().tearDownClass()
 
     def test_init_data_source(self, *args):
-        params = {
-            'options': OPTIONS,
-            'secret_data': {}
-        }
+        params = {"options": OPTIONS, "secret_data": {}}
 
-        self.transaction.method = 'init'
+        self.transaction.method = "init"
         data_source_svc = DataSourceService(transaction=self.transaction)
         response = data_source_svc.init(params.copy())
-        print_data(response, 'test_init_data_source')
+        print_data(response, "test_init_data_source")
 
-    @patch.object(HTTPFileConnector, '__init__', return_value=None)
-    @patch.object(HTTPFileConnector, 'create_session', return_value=None)
+    @patch.object(HTTPFileConnector, "__init__", return_value=None)
+    @patch.object(HTTPFileConnector, "create_session", return_value=None)
     def test_verify_data_source(self, *args):
-        params = {
-            'options': OPTIONS,
-            'secret_data': {}
-        }
+        params = {"options": OPTIONS, "secret_data": {}}
 
-        self.transaction.method = 'verify'
+        self.transaction.method = "verify"
         data_source_svc = DataSourceService(transaction=self.transaction)
         data_source_svc.verify(params.copy())
 

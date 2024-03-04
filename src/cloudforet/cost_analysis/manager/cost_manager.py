@@ -1,33 +1,42 @@
 import logging
-from datetime import datetime
 from dateutil.parser import parse
 from spaceone.core.manager import BaseManager
 from cloudforet.cost_analysis.error import *
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
+from cloudforet.cost_analysis.connector.google_storage_collector import (
+    GoogleStorageConnector,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 _REQUIRED_FIELDS = [
-    'cost',
-    'currency',
-    'year',
-    'month',
+    "cost",
+    "currency",
+    "year",
+    "month",
 ]
 
 
 class CostManager(BaseManager):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.http_file_connector: HTTPFileConnector = self.locator.get_connector(HTTPFileConnector)
+        self.http_file_connector: HTTPFileConnector = self.locator.get_connector(
+            HTTPFileConnector
+        )
 
     def get_data(self, options, secret_data, schema, task_options):
         self.http_file_connector.create_session(options, secret_data, schema)
         self._check_task_options(task_options)
 
-        base_url = task_options['base_url']
-
-        response_stream = self.http_file_connector.get_cost_data(base_url)
+        base_url = task_options["base_url"]
+        if not secret_data:
+            response_stream = self.http_file_connector.get_cost_data(base_url)
+        else:
+            # just for Google Cloud Storage
+            storage_connector = self.locator.get_connector(
+                GoogleStorageConnector, secret_data=secret_data
+            )
+            response_stream = storage_connector.get_cost_data(base_url)
         for results in response_stream:
             yield self._make_cost_data(results)
 
@@ -55,21 +64,21 @@ class CostManager(BaseManager):
 
             try:
                 data = {
-                    'cost': result['cost'],
-                    'usage_quantity': result.get('usage_quantity', 0),
-                    'usage_type': result.get('usage_type'),
-                    'usage_unit': result.get('usage_unit'),
-                    'provider': result.get('provider'),
-                    'region_code': result.get('region_code'),
-                    'product': result.get('product'),
-                    'resource': result.get('resource', ''),
-                    'billed_date': result['billed_date'],
-                    'additional_info': result.get('additional_info', {}),
-                    'tags': result.get('tags', {})
+                    "cost": result["cost"],
+                    "usage_quantity": result.get("usage_quantity", 0),
+                    "usage_type": result.get("usage_type"),
+                    "usage_unit": result.get("usage_unit"),
+                    "provider": result.get("provider"),
+                    "region_code": result.get("region_code"),
+                    "product": result.get("product"),
+                    "resource": result.get("resource", ""),
+                    "billed_date": result["billed_date"],
+                    "additional_info": result.get("additional_info", {}),
+                    "tags": result.get("tags", {}),
                 }
 
             except Exception as e:
-                _LOGGER.error(f'[_make_cost_data] make data error: {e}', exc_info=True)
+                _LOGGER.error(f"[_make_cost_data] make data error: {e}", exc_info=True)
                 raise e
 
             costs_data.append(data)
@@ -77,8 +86,8 @@ class CostManager(BaseManager):
 
     @staticmethod
     def _check_task_options(task_options):
-        if 'base_url' not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key='task_options.base_url')
+        if "base_url" not in task_options:
+            raise ERROR_REQUIRED_PARAMETER(key="task_options.base_url")
 
     @staticmethod
     def _apply_strip_to_dict_keys(result):
@@ -103,10 +112,15 @@ class CostManager(BaseManager):
                     result[origin_field] = result[actual_field]
                     del result[actual_field]
 
-            if origin_field == 'additional_info':
+            if origin_field == "additional_info":
                 additional_info = {}
-                for origin_additional_field, actual_additional_field in actual_field.items():
-                    additional_info[origin_additional_field] = result[actual_additional_field]
+                for (
+                    origin_additional_field,
+                    actual_additional_field,
+                ) in actual_field.items():
+                    additional_info[origin_additional_field] = result[
+                        actual_additional_field
+                    ]
                     del result[actual_additional_field]
                 result[origin_field] = additional_info
 
@@ -114,36 +128,36 @@ class CostManager(BaseManager):
 
     def _create_billed_date(self, result):
         if self._exist_billed_date(result):
-            billed_date = result['billed_date']
+            billed_date = result["billed_date"]
             billed_date = self._apply_parse_date(billed_date)
             billed_date = str(billed_date.strftime("%Y-%m-%d"))
 
-            result['billed_date'] = billed_date
+            result["billed_date"] = billed_date
 
         else:
-            year = result['year']
-            month = result['month']
-            day = result.get('day', '01')
+            year = result["year"]
+            month = result["month"]
+            day = result.get("day", "01")
 
             if len(month) == 1:
-                month = f'0{month}'
+                month = f"0{month}"
             if len(day) == 1:
-                day = f'0{day}'
+                day = f"0{day}"
 
-            billed_date = f'{year}-{month}-{day}'
+            billed_date = f"{year}-{month}-{day}"
 
-            result['billed_date'] = billed_date
+            result["billed_date"] = billed_date
 
         return result
 
     @staticmethod
     def _exist_billed_date(result):
-        if result.get('billed_date'):
+        if result.get("billed_date"):
             return True
-        elif result.get('year') and result.get('month'):
+        elif result.get("year") and result.get("month"):
             return False
         else:
-            _LOGGER.error(f'[_is_not_empty_billed_at] billed_at is empty: {result}')
+            _LOGGER.error(f"[_is_not_empty_billed_at] billed_at is empty: {result}")
             raise ERROR_EMPTY_BILLED_DATE(result=result)
 
     @staticmethod
@@ -152,7 +166,7 @@ class CostManager(BaseManager):
             parsed_date = parse(date)
             return parsed_date
         except TypeError as e:
-            _LOGGER.error(f'[_apply_parse_date] parse date error: {e}', exc_info=True)
+            _LOGGER.error(f"[_apply_parse_date] parse date error: {e}", exc_info=True)
             raise e
 
     def _set_default_vars(self, result):
@@ -162,23 +176,26 @@ class CostManager(BaseManager):
     @staticmethod
     def _convert_cost_and_usage_quantity_types(result):
         try:
-            result['cost'] = float(result['cost'])
-            result['usage_quantity'] = float(result.get('usage_quantity', 0))
+            result["cost"] = float(result["cost"])
+            result["usage_quantity"] = float(result.get("usage_quantity", 0))
         except Exception as e:
             _LOGGER.error(
-                f'[_convert_cost_and_usage_quantity_types] convert cost and usage quantity types error: {e} (data={result})',
-                exc_info=True)
+                f"[_convert_cost_and_usage_quantity_types] convert cost and usage quantity types error: {e} (data={result})",
+                exc_info=True,
+            )
             return False
         return True
 
     @staticmethod
     def _exist_cost_and_usage_quantity(result):
-        if result['cost'] or result['cost'] == float(0):
+        if result["cost"] or result["cost"] == float(0):
             return True
-        elif result['usage_quantity'] or result['usage_quantity'] == float(0):
+        elif result["usage_quantity"] or result["usage_quantity"] == float(0):
             return True
         else:
-            _LOGGER.error(f'[_exist_cost_and_usage_quantity] cost or usage quantity are empty: {result}')
+            _LOGGER.error(
+                f"[_exist_cost_and_usage_quantity] cost or usage quantity are empty: {result}"
+            )
             return False
 
     @staticmethod

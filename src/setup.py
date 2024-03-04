@@ -30,6 +30,13 @@ setup(
     author_email="admin@cloudforet.io",
     license="Apache License 2.0",
     packages=find_packages(),
-    install_requires=["spaceone-api", "schematics", "requests", "pandas", "numpy"],
+    install_requires=[
+        "spaceone-api",
+        "schematics",
+        "requests",
+        "pandas",
+        "numpy",
+        "google-cloud-storage",
+    ],
     zip_safe=False,
 )

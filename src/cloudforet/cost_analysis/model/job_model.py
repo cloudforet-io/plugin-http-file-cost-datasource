@@ -2,7 +2,7 @@ from schematics.models import Model
 from schematics.types import ListType, StringType
 from schematics.types.compound import ModelType
 
-__all__ = ['Tasks']
+__all__ = ["Tasks"]
 
 
 class TaskOptions(Model):
