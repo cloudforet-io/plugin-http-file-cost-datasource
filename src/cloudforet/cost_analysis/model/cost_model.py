@@ -1,7 +1,7 @@
 from schematics.models import Model
 from schematics.types import DictType, StringType, FloatType, DateTimeType
 
-__all__ = ['Cost']
+__all__ = ["Cost"]
 
 
 class Cost(Model):

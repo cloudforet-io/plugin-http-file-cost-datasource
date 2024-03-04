@@ -24,4 +24,4 @@ RUN python3 setup.py install && \
 EXPOSE ${SPACEONE_PORT}
 
 ENTRYPOINT ["spaceone"]
-CMD ["grpc", "cloudforet.cost_analysis"]
+CMD ["run", "grpc-server", "cloudforet.cost_analysis"]
