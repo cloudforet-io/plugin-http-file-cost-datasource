@@ -19,8 +19,6 @@ class CostManager(BaseManager):
         self.field_mapper = None
 
     def get_data(self, options, secret_data, schema, task_options):
-        self._check_task_options(task_options)
-
         if "default_vars" in options:
             self.default_vars = options["default_vars"]
 
@@ -86,11 +84,6 @@ class CostManager(BaseManager):
 
             costs_data.append(data)
         return costs_data
-
-    @staticmethod
-    def _check_task_options(task_options):
-        if "base_url" not in task_options or "bucket_name" not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key="task_options")
 
     @staticmethod
     def _apply_strip_to_dict_keys(result):
