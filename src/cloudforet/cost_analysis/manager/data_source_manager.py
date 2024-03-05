@@ -1,6 +1,10 @@
 import logging
 
 from spaceone.core.manager import BaseManager
+
+from cloudforet.cost_analysis.connector.google_storage_collector import (
+    GoogleStorageConnector,
+)
 from cloudforet.cost_analysis.model.data_source_model import PluginMetadata
 from cloudforet.cost_analysis.connector.http_file_connector import HTTPFileConnector
 
@@ -13,10 +17,33 @@ class DataSourceManager(BaseManager):
         plugin_metadata = PluginMetadata()
         plugin_metadata.validate()
 
+        if "bucket_name" in options:
+            return {
+                "metadata": {
+                    "data_source_rules": [
+                        {
+                            "name": "match_service_account",
+                            "conditions_policy": "ALWAYS",
+                            "actions": {
+                                "match_service_account": {
+                                    "source": "additional_info.Project ID",
+                                    "target": "data.project_id",
+                                }
+                            },
+                            "options": {"stop_processing": True},
+                        }
+                    ],
+                    "currency": "KRW",
+                }
+            }
+
         return {"metadata": plugin_metadata.to_primitive()}
 
     def verify_plugin(self, options, secret_data, schema):
-        http_file_connector: HTTPFileConnector = self.locator.get_connector(
-            HTTPFileConnector
-        )
-        http_file_connector.create_session(options, secret_data, schema)
+        if "base_url" in options:
+            http_file_connector: HTTPFileConnector = self.locator.get_connector(
+                HTTPFileConnector
+            )
+            http_file_connector.create_session(options, secret_data, schema)
+        elif "bucket_name" in options:
+            self.locator.get_connector(GoogleStorageConnector, secret_data=secret_data)

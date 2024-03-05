@@ -27,7 +27,7 @@ class CostManager(BaseManager):
         if "field_mapper" in options:
             self.field_mapper = options["field_mapper"]
 
-        if not secret_data:
+        if "base_url" in task_options:
             base_url = task_options["base_url"]
             http_file_connector = self.locator.get_connector(HTTPFileConnector)
             http_file_connector.create_session(options, secret_data, schema)

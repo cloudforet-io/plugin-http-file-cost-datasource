@@ -59,8 +59,8 @@ class GoogleStorageConnector(BaseConnector):
 
     @staticmethod
     def _check_options(options: dict) -> None:
-        if "base_url" not in options or "bucket_name" not in options:
-            raise ERROR_REQUIRED_PARAMETER(key="options.base_url")
+        if "bucket_name" not in options:
+            raise ERROR_REQUIRED_PARAMETER(key="options.bucket_name")
 
     @staticmethod
     def _get_csv(csv_file: str) -> List[dict]:
