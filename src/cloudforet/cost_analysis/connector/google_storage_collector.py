@@ -32,10 +32,9 @@ class GoogleStorageConnector(BaseConnector):
             project=self.secret_data["project_id"], credentials=self.credentials
         )
 
-    def get_cost_data(self, base_url):
-        _LOGGER.debug(f"[get_cost_data] base url: {base_url}")
+    def get_cost_data(self, bucket_name: str):
+        _LOGGER.debug(f"[get_cost_data] bucket name: {bucket_name}")
 
-        bucket_name = self.secret_data.get("bucket_name")
         bucket = self.client.get_bucket(bucket_name)
         blob_names = [blob.name for blob in bucket.list_blobs()]
 
@@ -47,7 +46,9 @@ class GoogleStorageConnector(BaseConnector):
                 csv_file_path = os.path.join(tmpdir, blob_name)
                 blob.download_to_filename(csv_file_path)
                 costs_data = self._get_csv(csv_file_path)
-                _LOGGER.debug(f"[get_cost_data] costs count: {len(costs_data)}")
+                _LOGGER.debug(
+                    f"[get_cost_data] costs count of {blob_name} : {len(costs_data)}"
+                )
 
                 # Paginate
                 page_count = int(len(costs_data) / _PAGE_SIZE) + 1

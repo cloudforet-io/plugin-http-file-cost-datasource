@@ -6,7 +6,8 @@ __all__ = ["Tasks"]
 
 
 class TaskOptions(Model):
-    base_url = StringType(required=True)
+    base_url = StringType(default=None)
+    bucket_name = StringType(default=None)
 
 
 class Task(Model):

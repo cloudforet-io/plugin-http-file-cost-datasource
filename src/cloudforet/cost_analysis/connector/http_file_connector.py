@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import chardet
 import requests
-import google.oauth2.service_account
-
-from spaceone.core.transaction import Transaction
 from spaceone.core.connector import BaseConnector
 from typing import List
 
