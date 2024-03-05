@@ -9,34 +9,37 @@ from cloudforet.cost_analysis.connector.google_storage_collector import (
 
 _LOGGER = logging.getLogger(__name__)
 
-_REQUIRED_FIELDS = [
-    "cost",
-    "currency",
-    "year",
-    "month",
-]
+_REQUIRED_FIELDS = ["cost", "currency", "billed_date"]
 
 
 class CostManager(BaseManager):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.http_file_connector: HTTPFileConnector = self.locator.get_connector(
-            HTTPFileConnector
-        )
+        self.default_vars = None
+        self.field_mapper = None
 
     def get_data(self, options, secret_data, schema, task_options):
-        self.http_file_connector.create_session(options, secret_data, schema)
         self._check_task_options(task_options)
 
-        base_url = task_options["base_url"]
+        if "default_vars" in options:
+            self.default_vars = options["default_vars"]
+
+        if "field_mapper" in options:
+            self.field_mapper = options["field_mapper"]
+
         if not secret_data:
-            response_stream = self.http_file_connector.get_cost_data(base_url)
+            base_url = task_options["base_url"]
+            http_file_connector = self.locator.get_connector(HTTPFileConnector)
+            http_file_connector.create_session(options, secret_data, schema)
+            response_stream = http_file_connector.get_cost_data(base_url)
         else:
             # just for Google Cloud Storage
+            bucket_name = task_options["bucket_name"]
             storage_connector = self.locator.get_connector(
                 GoogleStorageConnector, secret_data=secret_data
             )
-            response_stream = storage_connector.get_cost_data(base_url)
+            response_stream = storage_connector.get_cost_data(bucket_name)
+
         for results in response_stream:
             yield self._make_cost_data(results)
 
@@ -46,10 +49,10 @@ class CostManager(BaseManager):
             result = self._apply_strip_to_dict_keys(result)
             result = self._apply_strip_to_dict_values(result)
 
-            if self.http_file_connector.field_mapper:
+            if self.default_vars:
                 result = self._change_result_by_field_mapper(result)
 
-            if self.http_file_connector.default_vars:
+            if self.field_mapper:
                 self._set_default_vars(result)
 
             self._create_billed_date(result)
@@ -86,8 +89,8 @@ class CostManager(BaseManager):
 
     @staticmethod
     def _check_task_options(task_options):
-        if "base_url" not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key="task_options.base_url")
+        if "base_url" not in task_options or "bucket_name" not in task_options:
+            raise ERROR_REQUIRED_PARAMETER(key="task_options")
 
     @staticmethod
     def _apply_strip_to_dict_keys(result):
@@ -106,7 +109,7 @@ class CostManager(BaseManager):
         return result
 
     def _change_result_by_field_mapper(self, result):
-        for origin_field, actual_field in self.http_file_connector.field_mapper.items():
+        for origin_field, actual_field in self.field_mapper.items():
             if isinstance(actual_field, str):
                 if actual_field in result:
                     result[origin_field] = result[actual_field]
@@ -124,7 +127,7 @@ class CostManager(BaseManager):
                     del result[actual_additional_field]
                 result[origin_field] = additional_info
 
-            return result
+        return result
 
     def _create_billed_date(self, result):
         if self._exist_billed_date(result):
@@ -170,7 +173,7 @@ class CostManager(BaseManager):
             raise e
 
     def _set_default_vars(self, result):
-        for key, value in self.http_file_connector.default_vars.items():
+        for key, value in self.default_vars.items():
             result[key] = value
 
     @staticmethod
