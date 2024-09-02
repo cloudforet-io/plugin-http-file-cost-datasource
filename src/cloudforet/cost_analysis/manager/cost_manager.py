@@ -17,6 +17,7 @@ class CostManager(BaseManager):
         super().__init__(*args, **kwargs)
         self.default_vars = None
         self.field_mapper = None
+        self.type_mapper = None
 
     def get_data(self, options, secret_data, schema, task_options):
         if "default_vars" in options:
@@ -24,6 +25,9 @@ class CostManager(BaseManager):
 
         if "field_mapper" in options:
             self.field_mapper = options["field_mapper"]
+
+        if "type_mapper" in options:
+            self.type_mapper = options["type_mapper"]
 
         if "base_url" in task_options:
             base_url = task_options["base_url"]
@@ -52,6 +56,9 @@ class CostManager(BaseManager):
 
             if self.field_mapper:
                 self._set_default_vars(result)
+
+            if self.type_mapper:
+                self._set_type_mapper(result)
 
             self._create_billed_date(result)
 
@@ -199,3 +206,16 @@ class CostManager(BaseManager):
         for field in _REQUIRED_FIELDS:
             if field not in result:
                 raise ERROR_REQUIRED_PARAMETER(key=field)
+
+    def _set_type_mapper(self, result):
+        # Not Implemented
+        if "additional_info" in self.type_mapper:
+            if (
+                "Account ID" in self.type_mapper["additional_info"]
+                and "additional_info" in result
+                and "Account ID" in result.get("additional_info", {})
+            ):
+                account_id = result["additional_info"]["Account ID"]
+                if isinstance(account_id, int) or isinstance(account_id, float):
+                    result["additional_info"]["Account ID"] = str(account_id).zfill(12)
+        return result
