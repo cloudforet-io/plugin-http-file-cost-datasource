@@ -16,8 +16,19 @@ class DataSourceManager(BaseManager):
     def init_response(options):
         plugin_metadata = PluginMetadata()
         plugin_metadata.validate()
+        currency = options.get("currency", "USD")
 
         if "bucket_name" in options:
+            provider = options.get("provider", "google_cloud")
+            source = "additional_info.Project ID"
+            target = "data.project_id"
+            if provider == "aws":
+                source = "additional_info.Account ID"
+                target = "data.account_id"
+            elif provider == "azure":
+                source = "additional_info.Subscription Id"
+                target = "data.subscription_id"
+
             return {
                 "metadata": {
                     "data_source_rules": [
@@ -26,14 +37,14 @@ class DataSourceManager(BaseManager):
                             "conditions_policy": "ALWAYS",
                             "actions": {
                                 "match_service_account": {
-                                    "source": "additional_info.Project ID",
-                                    "target": "data.project_id",
+                                    "source": source,
+                                    "target": target,
                                 }
                             },
                             "options": {"stop_processing": True},
                         }
                     ],
-                    "currency": "KRW",
+                    "currency": currency,
                 }
             }
 
