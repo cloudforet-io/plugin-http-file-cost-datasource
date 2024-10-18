@@ -33,7 +33,6 @@ class GoogleStorageConnector(BaseConnector):
         )
 
     def get_cost_data(self, bucket_name: str):
-        _LOGGER.debug(f"[get_cost_data] bucket name: {bucket_name}")
 
         bucket = self.client.get_bucket(bucket_name)
         blob_names = [blob.name for blob in bucket.list_blobs()]
