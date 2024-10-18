@@ -1,4 +1,5 @@
 import logging
+import time
 from dateutil.parser import parse
 from spaceone.core.manager import BaseManager
 from cloudforet.cost_analysis.error import *
@@ -7,7 +8,7 @@ from cloudforet.cost_analysis.connector.google_storage_collector import (
     GoogleStorageConnector,
 )
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("spaceone")
 
 _REQUIRED_FIELDS = ["cost", "currency", "billed_date"]
 
@@ -20,11 +21,18 @@ class CostManager(BaseManager):
         self.type_mapper = None
 
     def get_data(self, options, secret_data, schema, task_options):
+        start_time = time.time()
+        _LOGGER.debug(
+            f"[get_data] Start Collecting Cost Data (task_options={task_options})"
+        )
+
         if "default_vars" in options:
             self.default_vars = options["default_vars"]
+            _LOGGER.debug(f"[get_data] apply default vars: {self.default_vars}")
 
         if "field_mapper" in options:
             self.field_mapper = options["field_mapper"]
+            _LOGGER.debug(f"[get_data] apply field mapper: {self.field_mapper}")
 
         if "type_mapper" in options:
             self.type_mapper = options["type_mapper"]
@@ -41,9 +49,15 @@ class CostManager(BaseManager):
                 GoogleStorageConnector, secret_data=secret_data
             )
             response_stream = storage_connector.get_cost_data(bucket_name)
+            _LOGGER.debug(f"[get_data] get cost data from {bucket_name} bucket")
 
         for results in response_stream:
             yield self._make_cost_data(results)
+
+        _LOGGER.debug(
+            f"[collector_collect] Finished Collecting Cost Data"
+            f"(duration: {time.time() - start_time:.2f}s)"
+        )
 
     def _make_cost_data(self, results):
         costs_data = []
@@ -51,10 +65,10 @@ class CostManager(BaseManager):
             result = self._apply_strip_to_dict_keys(result)
             result = self._apply_strip_to_dict_values(result)
 
-            if self.default_vars:
+            if self.field_mapper:
                 result = self._change_result_by_field_mapper(result)
 
-            if self.field_mapper:
+            if self.default_vars:
                 self._set_default_vars(result)
 
             if self.type_mapper:
