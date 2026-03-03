@@ -96,6 +96,7 @@ class CostManager(BaseManager):
                     "resource": result.get("resource", ""),
                     "billed_date": result["billed_date"],
                     "additional_info": result.get("additional_info", {}),
+                    "data": self._convert_data_values(result.get("data", {})),
                     "tags": result.get("tags", {}),
                 }
 
@@ -129,17 +130,13 @@ class CostManager(BaseManager):
                     result[origin_field] = result[actual_field]
                     del result[actual_field]
 
-            if origin_field == "additional_info":
-                additional_info = {}
-                for (
-                    origin_additional_field,
-                    actual_additional_field,
-                ) in actual_field.items():
-                    additional_info[origin_additional_field] = result[
-                        actual_additional_field
-                    ]
-                    del result[actual_additional_field]
-                result[origin_field] = additional_info
+            if origin_field in ("additional_info", "data"):
+                mapped_dict = {}
+                for mapped_key, csv_column in actual_field.items():
+                    if csv_column in result:
+                        mapped_dict[mapped_key] = result[csv_column]
+                        del result[csv_column]
+                result[origin_field] = mapped_dict
 
         return result
 
@@ -220,6 +217,16 @@ class CostManager(BaseManager):
         for field in _REQUIRED_FIELDS:
             if field not in result:
                 raise ERROR_REQUIRED_PARAMETER(key=field)
+
+    @staticmethod
+    def _convert_data_values(raw_data):
+        converted = {}
+        for key, value in raw_data.items():
+            try:
+                converted[key] = float(value) if value else 0.0
+            except (ValueError, TypeError):
+                converted[key] = value
+        return converted
 
     def _set_type_mapper(self, result):
         # Not Implemented

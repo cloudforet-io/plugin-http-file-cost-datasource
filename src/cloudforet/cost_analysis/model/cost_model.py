@@ -15,4 +15,5 @@ class Cost(Model):
     resource = StringType()
     billed_date = StringType(required=True, max_length=7)
     additional_info = DictType(StringType, default={})
+    data = DictType(StringType, default={})
     tags = DictType(StringType, default={})

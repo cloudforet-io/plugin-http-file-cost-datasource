@@ -26,6 +26,9 @@ def CostInfo(cost_data):
             "additional_info": change_struct_type(cost_data["additional_info"])
             if "additional_info" in cost_data
             else None,
+            "data": change_struct_type(cost_data["data"])
+            if "data" in cost_data
+            else None,
             "billed_date": cost_data["billed_date"],
         }
 
